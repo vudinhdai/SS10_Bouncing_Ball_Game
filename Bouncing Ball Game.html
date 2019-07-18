@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<button type="button" onclick="start()">Start</button>
+<br>
+<hr>
+<br>
+<div id = "gameBoard"></div>
+<p id = "point"></p>
+<script>
+    const UP_LEFT = 1;
+    const UP_RIGHT = 2;
+    const DOWN_LEFT = 3;
+    const DOWN_RIGHT = 4;
+    const RADIUS_BALL = 5;
+    let GameBoard = function (width,height) {
+        this.width = width;
+        this.height = height;
+        this.getWidth = function () {
+            return this.width;
+        };
+        this.setWidth = function (width) {
+            this.width = width;
+        };
+        this.getHeight = function () {
+            return this.height;
+        };
+        this.setHeight = function (height) {
+            this.height = height;
+        };
+    };
+    let Ball = function (x,y,corner,speed) {
+        this.x = x;
+        this.y = y;
+        this.corner = corner;
+        this.speed = speed;
+        this.getX = function () {
+            return this.x;
+        };
+        this.setX = function (x) {
+            this.x = x;
+        };
+        this.getY = function () {
+            return this.y;
+        };
+        this.setY = function (y) {
+            this.y = y;
+        };
+        this.getCorner = function () {
+            return this.corner;
+        };
+        this.setCorner = function (corner) {
+            this.corner = corner;
+        };
+        this.getSpeed = function () {
+            return this.speed;
+        };
+        this.setSpeed = function (speed) {
+            this.speed = speed;
+        };
+
+        this.move = function (x,y) {
+            this.x += x;
+            this.y += y;
+        };
+    };
+    let Bar = function (width, x) {
+        this.width = width;
+        this.x = x;
+        this.getWidth = function () {
+            return this.width;
+        };
+        this.setWidth = function (width) {
+            this.width = width;
+        };
+        this.getX = function () {
+            return this.x;
+        };
+        this.setX = function (x) {
+            this.x = x;
+        };
+        this.moveLeft = function () {
+            this.x -= this.speed;
+        };
+        this.moveRight = function () {
+            this.x += this.speed;
+        };
+    };
+    //tao gameBoard
+    let gameBoard = new GameBoard(600,400);
+    document.getElementById("gameBoard").innerHTML = '<canvas id="myGameBoard" width="'+
+        gameBoard.getWidth()+'px" height="'+gameBoard.getHeight()+'px" style="border:1px solid #d3d3d3;"/>';
+    //tao ball
+    let corner = Math.floor(Math.random() * 4 + 1);
+    let ball = new Ball(150,gameBoard.getHeight()-15,corner,50);
+    //tao thanh bar
+    let bar = new Bar(60,120);
+    draw();
+    function draw() {
+        let ctx = document.getElementById("myGameBoard");
+        let ctxBall = ctx.getContext("2d");
+        ctxBall.clearRect(0,0,ctx.width,ctx.height);
+        ctxBall.beginPath();
+        ctxBall.arc(ball.getX(), ball.getY(), RADIUS_BALL, 0, 2 * Math.PI);
+        ctxBall.fillStyle="rgb(211,0,0)";
+        ctxBall.fill();
+        ctxBall.closePath();
+        let ctxBar = ctx.getContext("2d");
+        ctxBar.fillStyle = "rgb(15,12,255)";
+        ctxBar.fillRect(bar.getX(),gameBoard.getHeight() - 10,bar.getWidth(),10);
+    }
+    function move() {
+        //cham trai
+        if (ball.getX() === RADIUS_BALL){
+            if (ball.getCorner() === UP_LEFT){
+                ball.move(5,-5);
+                ball.setCorner(UP_RIGHT);
+                draw();
+            }
+            if (ball.getCorner() === DOWN_LEFT){
+                ball.move(5,5);
+                ball.setCorner(DOWN_RIGHT);
+                draw();
+            }
+        }
+        //cham tren
+        if (ball.getY() === RADIUS_BALL){
+            if (ball.getCorner() === UP_RIGHT){
+                ball.move(5,5);
+                ball.setCorner(DOWN_RIGHT);
+                draw();
+            }
+            if (ball.getCorner() === UP_LEFT){
+                ball.move(-5,5);
+                ball.setCorner(DOWN_LEFT);
+                draw();
+            }
+        }
+        //cham phai
+        if (ball.getX() + RADIUS_BALL === gameBoard.getWidth()){
+            if (ball.getCorner() === DOWN_RIGHT){
+                ball.move(-5,5);
+                ball.setCorner(DOWN_LEFT);
+                draw();
+            }
+            if (ball.getCorner() === UP_RIGHT){
+                ball.move(-5,-5);
+                ball.setCorner(UP_LEFT);
+                draw();
+            }
+        }
+        //cham thanh bar
+        if (ball.getX() + RADIUS_BALL > bar.getX() && ball.getX() + RADIUS_BALL < bar.getX() + bar.getWidth() &&
+            ball.getY() + RADIUS_BALL === gameBoard.getHeight() - 10){
+            if (ball.getCorner() === DOWN_RIGHT){
+                ball.setCorner(UP_RIGHT);
+                ball.move(5,-5);
+                draw();
+            }
+            if (ball.getCorner() === DOWN_LEFT){
+                ball.setCorner(UP_LEFT);
+                ball.move(-5,-5);
+                draw();
+            }
+        }
+        //cham duoi
+        if (ball.getY() + RADIUS_BALL === gameBoard.getHeight()){
+            clearInterval(t);
+            alert("You lose!!! \n So diem cua ban la: "+point);
+            let playAgain = confirm("Play again?");
+            if (playAgain) {
+                //dat lai vi tri ball
+                ball = new Ball(150,gameBoard.getHeight()-15,corner,50);
+                //dat lai vi tri thanh bar
+                bar = new Bar(60,120);
+                draw();
+                start();
+            }
+        }
+        //khong cham
+        if (ball.getX()>RADIUS_BALL && ball.getX() + RADIUS_BALL < gameBoard.getWidth() &&
+            ball.getY()>RADIUS_BALL && ball.getY() +RADIUS_BALL < gameBoard.getHeight()){
+            switch (ball.getCorner()) {
+                case UP_LEFT:
+                    ball.move(-5,-5);
+                    draw();
+                    break;
+                case UP_RIGHT:
+                    ball.move(5,-5);
+                    draw();
+                    break;
+                case DOWN_LEFT:
+                    ball.move(-5,5);
+                    draw();
+                    break;
+                case DOWN_RIGHT:
+                    ball.move(5,5);
+                    draw();
+                    break;
+            }
+        }
+        point++;
+        document.getElementById("point").innerText = "Point: "+ point;
+    }
+    //di chuyen thanh bar khi nhan phim
+    function moveBar(evt) {
+        if (evt.keyCode === 37 && bar.getX()>0) {
+            let newX = bar.getX() - 20;
+            bar.setX(newX);
+            draw();
+        }
+        if (evt.keyCode === 39 && bar.getX() + bar.getWidth() < gameBoard.getWidth()){
+            let newX = bar.getX() + 20;
+            bar.setX(newX);
+            draw();
+        }
+    }
+    var t;
+    function start() {
+        point = 0;
+        document.getElementById("point").innerText = "Point: "+ point;
+        window.addEventListener('keydown', moveBar);
+        t = setInterval(move, ball.getSpeed());
+    }
+</script>
+</body>
+</html>
